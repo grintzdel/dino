@@ -80,11 +80,11 @@ class Game {
             text(Math.floor(this.score),width/2+150,50);
 
             if(this.highScore < this.score){
-                this.highScore = Math.floor(this.score);
+                this.highScore = Math.round(this.score, 0);
             }
 
             text("High Score",width/2+280,50);
-            text(this.highScore,width/2+460,50);
+            text(Math.round(this.highScore,0),width/2+460,50);
 
             if(!this.player.will_die){
                 this.check_collisions();
@@ -106,8 +106,6 @@ class Game {
             text("Fps",50,50);
             text(parseFloat(frameRate()).toFixed(3),120,50);
         }
-
-
 
         // Vérifier si le score actuel est supérieur ou égal au meilleur score
         if(this.score >= this.highScore){
@@ -177,12 +175,17 @@ class Game {
     }
 
     updateHighScores(score) {
+        // Arrondir le score à l'entier le plus proche
+        score = Math.round(score, 0);
+
         // Ajouter le nouveau score à la liste
         this.highScores.unshift(score);
+
         // Si la liste contient plus de trois scores, supprimer le dernier score
         if (this.highScores.length > 3) {
             this.highScores.pop();
         }
+
         // Sauvegarder la liste mise à jour dans le localStorage
         localStorage.setItem('highScores', JSON.stringify(this.highScores));
     }
