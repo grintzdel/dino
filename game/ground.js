@@ -7,7 +7,7 @@ class Ground{
         this.x2 = -1280;
         this.y = 512;
         this.w = 1280;
-        this.h = 24;
+        this.h = 100; // propriétés du sprite
     }
 
     update(speed){

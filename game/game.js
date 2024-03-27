@@ -1,6 +1,6 @@
 class Game {
     last_bird_x = 1350;
-    speed = 12; 
+    speed = 12;
     maxSpeed = 20;
     score = 0;
     highScore = 0;
@@ -12,6 +12,7 @@ class Game {
     sprite;
     imgGameOver;
     imgGameOverNight;
+    highScores = [];
 
     constructor(start, debugged){
         this.started = start;
@@ -24,6 +25,7 @@ class Game {
         this.birds = [];
         this.clouds = [];
         this.stars = [];
+        this.loadHighScores();
     }
 
     update(){
@@ -104,6 +106,18 @@ class Game {
             text("Fps",50,50);
             text(parseFloat(frameRate()).toFixed(3),120,50);
         }
+
+
+
+        // Vérifier si le score actuel est supérieur ou égal au meilleur score
+        if(this.score >= this.highScore){
+            this.highScore = this.score;
+        }
+
+        // Si le joueur n'est plus en vie, mettre à jour les meilleurs scores
+        if(!this.player.isAlive()){
+            this.updateHighScores(this.highScore);
+        }
     }
 
     display(){
@@ -143,7 +157,7 @@ class Game {
             for (let cbp of this.player.activeCollisionBoxes){
                 cbp.display();
             }
-        } 
+        }
     }
 
     load_game(w){
@@ -152,6 +166,40 @@ class Game {
         this.load_ground_assets();
         this.load_player_assets();
     }
+
+    loadHighScores() {
+        const scores = localStorage.getItem('highScores');
+        if (scores) {
+            this.highScores = JSON.parse(scores);
+        } else {
+            this.highScores = [0, 0, 0];
+        }
+    }
+
+    updateHighScores(score) {
+        // Ajouter le nouveau score à la liste
+        this.highScores.unshift(score);
+        // Si la liste contient plus de trois scores, supprimer le dernier score
+        if (this.highScores.length > 3) {
+            this.highScores.pop();
+        }
+        // Sauvegarder la liste mise à jour dans le localStorage
+        localStorage.setItem('highScores', JSON.stringify(this.highScores));
+    }
+
+    displayHighScores() {
+        // Afficher les meilleurs scores uniquement lorsque le joueur n'est plus en vie
+        if(!this.player.isAlive()){
+            const scores = JSON.parse(localStorage.getItem('highScores')) || [0, 0, 0];
+            textSize(32);
+            fill(32, 33, 36);
+            text("Last Scores:", 50, 100);
+            for (let i = 0; i < scores.length; i++) {
+                text(`${i+1}. ${scores[i]}`, 50, 150 + i * 50);
+            }
+        }
+    }
+
     set_window_width(w){
         this.window_width = w;
         this.ground.w = w;
@@ -166,7 +214,7 @@ class Game {
         this.player.img_running_1 = this.sprite.get(848, 2, 44, 47);
         this.player.img_running_2 = this.sprite.get(936, 2, 44, 47);
         this.player.img_running_3 = this.sprite.get(980, 2, 44, 47);
-        this.player.img_crouching_1 = this.sprite.get(1112, 19, 59, 30); 
+        this.player.img_crouching_1 = this.sprite.get(1112, 19, 59, 30);
         this.player.img_crouching_2 = this.sprite.get(1171, 19, 59, 30);
         this.player.img_die = this.sprite.get(1068, 2, 44, 47);
         this.player.img_die_night = this.sprite.get(1024, 2, 44, 47);
@@ -176,8 +224,8 @@ class Game {
     }
 
     load_ground_assets(){
-        this.ground.img = this.sprite.get(2, 53, 1200, 13);
-        this.ground.imgGameNotStarted = this.sprite.get(40, 53, 49, 13);
+        this.ground.img = this.sprite.get(2, 53, 1200, 100); // img du sprite
+        this.ground.imgGameNotStarted = this.sprite.get(40, 53, 49, 50);
     }
 
     spawn_enemy(){
@@ -215,7 +263,7 @@ class Game {
         this.cactae = this.cactae.filter(c => c.x + c.w >= 0);
         this.birds = this.birds.filter(b => b.x + b.w >= 0);
     }
-      
+
     despawn_cloud(){
         this.clouds = this.clouds.filter(cl => cl.x + cl.w >= 0);
     }
@@ -239,13 +287,13 @@ class Game {
             let p_y = cbp.y;
             let p_w = cbp.w;
             let p_h = cbp.h;
-            
+
             for (let c of this.cactae){
 
                 for(let cbc of c.collisionBoxes){
 
                     if(p_x + p_w > cbc.x && p_x < cbc.x + cbc.w){
-                
+
                         if (this.player.isJumping() ){
                             if(p_y+ p_h > cbc.y){
                                 this.player.die(); break loopCollisions;
@@ -276,13 +324,13 @@ class Game {
                     }
                 }
             }
-            
+
             for (let b of this.birds){
 
                 for(let cbb of b.activeCollisionBoxes){
 
                     if(p_x + p_w > cbb.x && p_x < cbb.x + cbb.w){
-               
+
                         if(p_y+ p_h > cbb.y && p_y < cbb.y +cbb.h){
                             this.player.stop_jumping = false;
                             this.player.x+=1;
@@ -343,11 +391,11 @@ class Game {
                             }
                         }
                         break loopCactus;
-                    } 
+                    }
                     else{
                         this.player.stop_jump();
-                    }  
-                } 
+                    }
+                }
             }
             loopBirds:
             for (let b of this.birds){
@@ -368,7 +416,7 @@ class Game {
                             this.player.stop_jump(e_y);
                         }
                         break loopBirds;
-                    } 
+                    }
                     else{
                         this.player.stop_jump();
                     }
@@ -414,5 +462,5 @@ class Game {
         if (key == "DOWN" && this.player.isAlive() && this.started){
             this.player.stop_crouch();
         }
-    } 
+    }
 }
